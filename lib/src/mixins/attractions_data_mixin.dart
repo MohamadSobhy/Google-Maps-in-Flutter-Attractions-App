@@ -29,6 +29,15 @@ class AttractionDataMixin {
       ),
     ),
     Attraction(
+      attractionName: 'Cairo hospital',
+      address:
+          '3 Al ASRI Mohammed Nafe, El-Montaza, Heliopolis, Cairo Governorate.',
+      description: 'Medical place.',
+      thumbnail:
+          'http://targetfortab.com/ar/cache/widgetkit/gallery/54/640-6c6d9e4da0-4fdb73743a.jpg',
+      locationCoords: LatLng(30.094434, 31.31765500000006),
+    ),
+    Attraction(
       attractionName: 'Beanos caffee',
       address: '15 Baghdad St, El-Montaza, Heliopolis, Cairo Governorate.',
       description: 'Coffee shop.',
@@ -79,15 +88,6 @@ class AttractionDataMixin {
       thumbnail:
           'http://english.ahram.org.eg/Media/News/2015/3/11/2015-635616703773143990-314.jpg',
       locationCoords: LatLng(30.103549000000005, 31.32944599999996),
-    ),
-    Attraction(
-      attractionName: 'Cairo hospital',
-      address:
-          '3 Al ASRI Mohammed Nafe, El-Montaza, Heliopolis, Cairo Governorate.',
-      description: 'Medical place.',
-      thumbnail:
-          'http://targetfortab.com/ar/cache/widgetkit/gallery/54/640-6c6d9e4da0-4fdb73743a.jpg',
-      locationCoords: LatLng(30.094434, 31.31765500000006),
     ),
     Attraction(
       attractionName: 'IBM Egypt',

@@ -1,4 +1,8 @@
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import './../mixins/attractions_data_mixin.dart';
@@ -21,26 +25,53 @@ class _HomeScreenState extends State<HomeScreen> with AttractionDataMixin {
   @override
   void initState() {
     super.initState();
-    attractionMarkerList = attractionList.map(
-      (attraction) {
-        return Marker(
-          markerId: MarkerId(attraction.attractionName),
-          draggable: false,
-          infoWindow: InfoWindow(
-            title: attraction.attractionName,
-            snippet: attraction.address,
-          ),
-          position: attraction.locationCoords,
-        );
-      },
-    ).toList();
 
-    _pageController = PageController(initialPage: 1, viewportFraction: 0.8)
+    initializeMarkers();
+
+    _pageController = PageController(initialPage: 2, viewportFraction: 0.8)
       ..addListener(_onPageViewScrolled);
   }
 
   void _onPageViewScrolled() {
     _moveCameraToSelectedAttraction(_pageController.page.toInt(), false);
+  }
+
+  Future<bool> initializeMarkers() async {
+    final Uint8List markerIcon =
+        await getMakerIconFromAssets('assets/images/marker_icon.png', 80);
+
+    attractionMarkerList = attractionList.map(
+      (attraction) {
+        return Marker(
+          markerId: MarkerId(attraction.attractionName),
+          draggable: false,
+          icon: BitmapDescriptor.fromBytes(markerIcon),
+          infoWindow: InfoWindow(
+              title: attraction.attractionName,
+              snippet: attraction.address,
+              onTap: () {
+                _pageController.animateToPage(
+                  attractionList.indexOf(attraction),
+                  duration: Duration(seconds: 1),
+                  curve: Curves.easeInOut,
+                );
+              }),
+          position: attraction.locationCoords,
+        );
+      },
+    ).toList();
+
+    return true;
+  }
+
+  Future<Uint8List> getMakerIconFromAssets(String path, int width) async {
+    ByteData data = await rootBundle.load(path);
+    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
+        targetWidth: width);
+    ui.FrameInfo frameInfo = await codec.getNextFrame();
+    return (await frameInfo.image.toByteData(format: ui.ImageByteFormat.png))
+        .buffer
+        .asUint8List();
   }
 
   @override
@@ -57,76 +88,61 @@ class _HomeScreenState extends State<HomeScreen> with AttractionDataMixin {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Google Maps App',
-        ),
-      ),
-      body: Stack(
-        overflow: Overflow.visible,
-        children: <Widget>[
-          Container(
-            height: mediaQuery.size.height,
-            width: mediaQuery.size.width,
-            child: GoogleMap(
-              polygons: [
-                Polygon(
-                  strokeColor: Colors.blueAccent,
-                  polygonId:
-                      PolygonId('from first attraction to the second one'),
-                  points: [
-                    attractionList[1].locationCoords,
-                    attractionList[0].locationCoords,
-                  ],
+      body: FutureBuilder(
+        future: initializeMarkers(),
+        builder: (BuildContext ctx, snapshot) {
+          if (!snapshot.hasData)
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+
+          return Stack(
+            overflow: Overflow.visible,
+            children: <Widget>[
+              Container(
+                height: mediaQuery.size.height,
+                width: mediaQuery.size.width,
+                child: GoogleMap(
+                  mapType: mapType,
+                  initialCameraPosition: CameraPosition(
+                    target: attractionList[2].locationCoords,
+                    zoom: currentZoom - 3.0,
+                  ),
+                  onMapCreated: _onMapCreatedCallback,
+                  markers: attractionMarkerList.toSet(),
                 ),
-                Polygon(
-                  strokeColor: Colors.blueAccent,
-                  polygonId:
-                      PolygonId('from first attraction to the second one'),
-                  points: [
-                    attractionList[4].locationCoords,
-                    attractionList[2].locationCoords,
-                  ],
-                ),
-              ].toSet(),
-              mapType: mapType,
-              initialCameraPosition: CameraPosition(
-                target: LatLng(30.094434, 31.31765500000006),
-                zoom: currentZoom - 3.0,
               ),
-              onMapCreated: _onMapCreatedCallback,
-              markers: attractionMarkerList.toSet(),
-            ),
-          ),
-          Positioned(
-            bottom: 80.0,
-            height: 140.0,
-            width: mediaQuery.size.width,
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: attractionList.length,
-              itemBuilder: (BuildContext ctx, int index) {
-                print(index);
-                return AttractionCard(
-                  attractionList[index],
-                  _pageController,
-                  index,
-                  _moveCameraToSelectedAttraction,
-                );
-              },
-            ),
-          ),
-          _buildControlButtons(),
-        ],
+              Positioned(
+                bottom: 80.0,
+                height: 140.0,
+                width: mediaQuery.size.width,
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: attractionList.length,
+                  itemBuilder: (BuildContext ctx, int index) {
+                    print(index);
+                    return AttractionCard(
+                      attractionList[index],
+                      _pageController,
+                      index,
+                      _moveCameraToSelectedAttraction,
+                    );
+                  },
+                ),
+              ),
+              _buildControlButtons(),
+            ],
+          );
+        },
       ),
     );
   }
 
   Widget _buildControlButtons() {
     return Positioned(
-      top: 15.0,
+      top: 50.0,
       right: 15.0,
-      height: 180.0,
+      height: 200.0,
       width: 50.0,
       child: ListView(
         scrollDirection: Axis.vertical,
@@ -203,7 +219,11 @@ class _HomeScreenState extends State<HomeScreen> with AttractionDataMixin {
     );
 
     if (clickedNotDragged && _pageController.page != index) {
-      _pageController.jumpToPage(index);
+      _pageController.animateToPage(
+        index,
+        duration: Duration(seconds: 1),
+        curve: Curves.easeInOut,
+      );
     }
   }
 
