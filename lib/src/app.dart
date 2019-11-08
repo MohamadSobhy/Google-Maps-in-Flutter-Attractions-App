@@ -8,6 +8,9 @@ class GoogleMapsApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: HomeScreen(),
+      theme: ThemeData(
+        primarySwatch: Colors.blueGrey,
+      ),
     );
   }
 }

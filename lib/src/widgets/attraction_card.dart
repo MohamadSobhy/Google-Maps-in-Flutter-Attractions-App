@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import './../models/attraction_model.dart';
@@ -60,11 +61,25 @@ class AttractionCard extends StatelessWidget {
                         topLeft: Radius.circular(10.0),
                         bottomLeft: Radius.circular(10.0),
                       ),
-                      image: DecorationImage(
-                        image: NetworkImage(
-                          _attraction.thumbnail,
-                        ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(10.0),
+                        bottomLeft: Radius.circular(10.0),
+                      ),
+                      child: CachedNetworkImage(
                         fit: BoxFit.cover,
+                        imageUrl: _attraction.thumbnail,
+                        placeholder: (BuildContext ctx, String url) {
+                          return Center(
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.blueGrey),
+                            ),
+                          );
+                        },
+                        errorWidget: (BuildContext ctx, String url, _) =>
+                            Icon(Icons.error),
                       ),
                     ),
                   ),
@@ -83,14 +98,15 @@ class AttractionCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 15.0,
                             fontWeight: FontWeight.bold,
+                            color: Colors.black,
                           ),
                         ),
                         Text(
                           _attraction.address,
                           style: TextStyle(
-                            fontSize: 13.0,
-                            fontWeight: FontWeight.w600,
-                          ),
+                              fontSize: 13.0,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.blueGrey),
                           textAlign: TextAlign.justify,
                         ),
                         Text(

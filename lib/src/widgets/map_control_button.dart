@@ -13,10 +13,10 @@ class MapControlButton extends StatelessWidget {
       width: 50.0,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(30.0),
+        borderRadius: BorderRadius.circular(10.0),
         boxShadow: [
           BoxShadow(
-            blurRadius: 10.0,
+            blurRadius: 2.0,
             color: Colors.black54,
           ),
         ],
@@ -27,8 +27,8 @@ class MapControlButton extends StatelessWidget {
           onPressed: onButtonPressed,
           icon: Icon(
             icon,
-            size: 40.0,
-            color: Colors.lightBlue,
+            size: 30.0,
+            color: Theme.of(context).primaryColor,
           ),
         ),
       ),
